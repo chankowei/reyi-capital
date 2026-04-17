@@ -16,24 +16,22 @@
   .tab{padding:9px 22px;font-size:13px;font-weight:500;border:1px solid #D0D7E2;border-bottom:none;
        border-radius:6px 6px 0 0;cursor:pointer;background:#EEF1F6;color:#5A6A7E;transition:all .15s}
   .tab.active{background:white;color:#1B3A5C;font-weight:600}
+  .alert-badge{display:inline-block;background:#E24B4A;color:white;border-radius:50%;width:20px;height:20px;
+               font-size:12px;font-weight:700;line-height:20px;text-align:center;margin-left:6px;vertical-align:middle}
+  .tab.has-alert{border-color:#E24B4A}
   .panel{display:none}.panel.active{display:block}
-
-  /* 警示長條 x1.35 */
   .alert-bar{border-radius:8px;padding:13px 18px;margin-bottom:14px;font-size:17px;font-weight:500}
   .gap-bar{border-radius:8px;padding:13px 18px;margin-bottom:16px;font-size:17px;
            background:#FCEBEB;color:#A32D2D;border:1px solid #F7C1C1;display:none}
   .gap-bar.show{display:block}
   .gap-days{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .gap-chip{background:#E24B4A;color:white;border-radius:12px;padding:3px 12px;font-size:14px;font-weight:600}
-
-  /* KPI 四格 x1.35 */
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
   .kpi{background:white;border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
   .kpi.danger{background:#FCEBEB;border:1px solid #F7C1C1}
   .kpi-label{font-size:15px;color:#7A8A9E;margin-bottom:5px}
   .kpi-val{font-size:26px;font-weight:600}
   .kpi-sub{font-size:14px;margin-top:3px;color:#9AA8B8}
-
   .card{background:white;border-radius:10px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:16px}
   .section-title{font-size:12px;font-weight:600;color:#7A8A9E;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}
   .chart-wrap{position:relative;width:100%;height:260px}
@@ -47,7 +45,6 @@
   .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:11px;color:#5A6A7E}
   .legend span{display:flex;align-items:center;gap:4px}
   .legend i{width:11px;height:11px;border-radius:2px;display:inline-block;flex-shrink:0}
-
   .table-wrap{overflow-x:auto;margin-bottom:0}
   table{width:100%;border-collapse:collapse;font-size:11px;min-width:900px}
   table th{padding:6px 8px;text-align:center;font-weight:600;white-space:nowrap}
@@ -68,7 +65,6 @@
   td.warn-cell{color:#E67E22;font-weight:500}
   tr.total-row td.net-pos{color:#90EE90}
   tr.total-row td.net-neg{color:#FFB3B3}
-
   @media(max-width:600px){
     .kpis{grid-template-columns:repeat(2,1fr)}
     .two-col{grid-template-columns:1fr}
@@ -77,16 +73,14 @@
 </style>
 </head>
 <body>
-
 <div class="header">
   <h1>日翊　資金水位控管儀表板</h1>
   <p>民國 115年　4月 ・ 5月　|　每日銀行存款餘額監控</p>
 </div>
-
 <div class="container">
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('apr')">4月</div>
-    <div class="tab" onclick="switchTab('may')">5月 ⚠</div>
+    <div class="tab active" id="tab-apr" onclick="switchTab('apr')">4月</div>
+    <div class="tab has-alert" id="tab-may" onclick="switchTab('may')">5月<span class="alert-badge">!</span></div>
   </div>
 
   <!-- 4月 -->
@@ -169,16 +163,16 @@ const fmt  = v=>(v<0?'-$':'$')+Math.abs(Math.round(v)).toLocaleString('zh-TW');
 const fmtN = v=>v===0?'—':fmt(v);
 
 const aprDays    = Array.from({length:30},(_,i)=>i+1);
-const aprWkend   = [true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false];
-const aprBalance = [101019,72821,72821,72821,72821,261826,260969,260836,266113,266113,266113,316409,272550,237340,217747,409179,409179,409179,322436,322282,398904,398389,515513,515513,515513,380259,380259,392259,75328,75328];
-const aprIn={gen:[220007,0,0,0,0,0,0,0,0,0,0,0,0,308467,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],heat:[0,0,0,0,0,208674,0,0,40986,0,0,224530,0,0,0,0,0,0,0,0,0,200000,0,0,0,0,0,0,0,0],ec:[109878,6727,0,0,0,394914,90,249,192034,0,0,96,0,205447,0,449077,0,0,102213,0,362000,0,253000,0,0,0,0,362000,0,0],oth:[47993,559,0,0,0,136,20,9,423,0,0,242,46785,1279,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
-const aprOut={gen:[142172,200,0,0,0,0,0,0,0,0,0,0,44351,71456,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,206289],heat:[0,13818,0,0,0,129693,0,0,34516,0,0,129693,0,0,17800,0,0,0,0,0,0,135378,0,0,0,0,14754,0,0,64787],ec:[182218,0,0,0,0,284134,0,0,172430,0,0,44525,44567,403725,0,257506,0,0,187126,0,350000,0,134910,0,0,120000,0,350000,0,0],oth:[8549,21466,0,0,0,892,967,391,21220,0,0,354,1726,75222,1793,139,0,0,1830,154,0,515,966,0,0,500,0,0,0,45855]};
+const aprWkend   = [false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false];
+const aprBalance = [101019,72821,72821,72821,72821,72821,261826,260969,260836,266113,266113,266113,316409,272550,237340,217747,409179,409179,409179,322436,322282,398904,398389,515513,515513,515513,380259,380259,392259,75328];
+const aprIn={gen:[220007,0,0,0,0,0,0,0,0,0,0,0,0,0,308467,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],heat:[0,0,0,0,0,0,208674,0,0,40986,0,0,224530,0,0,0,0,0,0,0,0,200000,0,0,0,0,0,0,0,0],ec:[109878,6727,0,0,0,0,394914,90,249,192034,0,0,96,0,205447,0,449077,0,0,102213,0,362000,0,253000,0,0,0,0,362000,0],oth:[47993,559,0,0,0,0,136,20,9,423,0,0,242,46785,1279,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
+const aprOut={gen:[142172,200,0,0,0,0,0,0,0,0,0,0,0,44351,71456,0,0,0,0,0,0,0,0,0,0,0,0,0,0,206289],heat:[0,13818,0,0,0,0,129693,0,0,34516,0,0,129693,0,0,17800,0,0,0,0,0,135378,0,0,0,0,14754,0,0,64787],ec:[182218,0,0,0,0,0,284134,0,0,172430,0,0,44525,44567,403725,0,257506,0,0,187126,0,350000,0,134910,0,0,120000,0,350000,0],oth:[8549,21466,0,0,0,0,892,967,391,21220,0,0,354,1726,75222,1793,139,0,0,1830,154,0,515,966,0,0,500,0,0,45855]};
 
-const mayDays    = Array.from({length:31},(_,i)=>i+1);
-const mayWkend   = [false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true];
-const mayBalance = [75328,75328,75328,-85535,215265,227265,227265,337265,337265,337265,184357,384357,396357,396293,122298,122298,122298,2298,2298,104998,104998,232998,232998,232998,111983,111983,123983,123983,19222,19222,19222];
-const mayIn={gen:[0,0,0,88651,0,0,0,0,0,0,0,0,0,0,4000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],heat:[0,0,0,0,200000,0,0,0,0,0,0,200000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],ec:[0,0,0,253000,121800,362000,0,253000,0,0,21200,0,362000,0,253000,0,0,0,0,453800,0,253000,0,0,0,0,362000,0,253000,0,0],oth:[0,0,0,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
-const mayOut={gen:[0,0,0,159650,0,0,0,0,0,0,0,0,0,0,86249,0,0,0,0,0,0,0,0,0,0,0,0,0,185000,0,0],heat:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],ec:[0,0,0,331000,0,350000,0,125000,0,0,172108,0,350000,0,244000,0,0,120000,0,350000,0,125000,0,0,120000,0,350000,0,125000,0,0],oth:[0,0,0,11900,21000,0,0,18000,0,0,2000,0,0,64,200746,0,0,0,0,1100,0,0,0,0,1015,0,0,0,47761,0,0]};
+const mayDays    = Array.from({length:30},(_,i)=>i+1);
+const mayWkend   = [false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true,true,false,false,false,false,false,true];
+const mayBalance = [75328,75328,75328,-85535,215265,227265,227265,337265,337265,337265,184357,384357,396357,396293,122298,122298,122298,2298,2298,104998,104998,232998,232998,232998,111983,111983,123983,123983,19222,19222];
+const mayIn={gen:[0,0,0,88651,0,0,0,0,0,0,0,0,0,0,4000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],heat:[0,0,0,0,200000,0,0,0,0,0,0,200000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],ec:[0,0,0,253000,121800,362000,0,253000,0,0,21200,0,362000,0,253000,0,0,0,0,453800,0,253000,0,0,0,0,362000,0,253000,0],oth:[0,0,0,36,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
+const mayOut={gen:[0,0,0,159650,0,0,0,0,0,0,0,0,0,0,86249,0,0,0,0,0,0,0,0,0,0,0,0,0,185000,0],heat:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],ec:[0,0,0,331000,0,350000,0,125000,0,0,172108,0,350000,0,244000,0,0,120000,0,350000,0,125000,0,0,120000,0,350000,0,125000,0],oth:[0,0,0,11900,21000,0,0,18000,0,0,2000,0,0,64,200746,0,0,0,0,1100,0,0,0,0,1015,0,0,0,47761,0]};
 
 const inLabels=['一般商品收入','加熱菸銷貨款','EC代收款','其他'];
 const outLabels=['一般商品進貨','加熱菸進貨款','EC代付款','其他'];
